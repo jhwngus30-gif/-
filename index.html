@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+<body>
+<title>K-뷰티 일본 진출 대시보드 체험판</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* Layout: 왼쪽 화면 목록(메뉴별 묶음) + 오른쪽 실제 화면 캡처. 위 띠에 체험판 안내. */
+:root{
+  --bg:#eef2f8; --panel:#ffffff; --fg:#111c33; --muted:#5b6780; --line:#dfe5ef;
+  --accent:#2d63e6; --accent-soft:#e7eefd; --on:#ffffff; --note:#94650f; --note-soft:#fbefd6;
+  --sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0a1122; --panel:#121c33; --fg:#e8edf6; --muted:#9aa7bf; --line:#26324d;
+  --accent:#7ea3ff; --accent-soft:#1b2a4f; --on:#0a1122; --note:#e3b65c; --note-soft:#3a2e15; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0a1122; --panel:#121c33; --fg:#e8edf6; --muted:#9aa7bf; --line:#26324d;
+  --accent:#7ea3ff; --accent-soft:#1b2a4f; --on:#0a1122; --note:#e3b65c; --note-soft:#3a2e15; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:14px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1500px;margin:0 auto;padding-block:20px 48px;display:flex;flex-direction:column;gap:16px}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 24px}
+header h1{margin:0;font-size:20px}
+header p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.notice{background:var(--note-soft);color:var(--note);border-radius:10px;padding:8px 14px;font-size:12.5px;max-width:560px}
+.app{display:grid;grid-template-columns:250px 1fr;gap:16px;align-items:start}
+nav{background:var(--panel);border-radius:14px;padding:14px;position:sticky;top:max(12px,env(safe-area-inset-top,0px));max-height:calc(100vh - 24px);overflow-y:auto}
+nav h2{font-size:11px;letter-spacing:.08em;color:var(--muted);margin:12px 8px 4px}
+nav h2:first-child{margin-top:0}
+nav button{display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%;text-align:left;border:0;background:none;color:var(--fg);font:inherit;font-size:13.5px;padding:6px 8px;border-radius:8px;cursor:pointer}
+nav button:hover{background:var(--accent-soft)}
+nav button[aria-current="true"]{background:var(--accent);color:var(--on);font-weight:500}
+nav button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+main{background:var(--panel);border-radius:14px;padding:18px 20px 20px;min-width:0;display:flex;flex-direction:column;gap:12px}
+.cap{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 16px}
+.cap h3{margin:0;font-size:18px}
+.cap p{margin:0;color:var(--muted);font-size:13.5px;flex-basis:100%}
+.step{display:flex;gap:8px}
+.step button{border:1px solid var(--line);background:var(--panel);color:var(--fg);font:inherit;font-size:13px;border-radius:8px;padding:4px 12px;cursor:pointer}
+.step button:hover{border-color:var(--accent);color:var(--accent)}
+.shot{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+.shot img{display:block;width:100%;height:auto}
+.phones{display:flex;flex-wrap:wrap;gap:28px;justify-content:center;padding:12px 0}
+.phone{width:300px;max-width:100%;border:10px solid #1b1f2a;border-radius:36px;overflow:hidden;background:#fff}
+.phone img{display:block;width:100%;height:auto}
+@media (max-width:860px){.app{grid-template-columns:1fr}nav{position:static;max-height:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>K-뷰티 일본 진출 AI 대시보드 · 체험판</h1>
+      <p>4조 팀 프로젝트 (2등) · 예시 브랜드 Leaf& Dew · 왼쪽에서 화면을 고르세요</p>
+    </div>
+    <div class="notice">실제 서비스 화면을 로그인 없이 볼 수 있게 샘플 데이터로 옮겨 둔 페이지입니다. 실제 서비스는 팀 계정 로그인과 DB 연결이 필요해 별도로 운영했습니다.</div>
+  </header>
+  <div class="app">
+    <nav id="nav" aria-label="화면 목록"></nav>
+    <main id="view" aria-live="polite"></main>
+  </div>
+</div>
+
+<script>
+const S=[
+ ['홈','home','홈','오늘 할 일, 판매 중 제품의 진행 현황, 프로모션 캘린더를 한 화면에서 봅니다.'],
+ ['홈','projects','제품 × 탭 진행 표','판매 중 제품마다 시장·리뷰·광고 검토·AI 분석이 어디까지 왔는지 보여 줍니다.'],
+ ['홈','calendar','프로모션 캘린더','메가와리 같은 행사와 준비 마감을 등록하고 완료를 체크합니다.'],
+ ['시장 분석','market-summary','시장 요약','Qoo10 랭킹과 검색 관심도로 이번 주 시장 흐름을 요약합니다.'],
+ ['시장 분석','market-response','우리 제품 대응','시장 흐름에서 우리 제품이 무엇을 해야 하는지 정리합니다.'],
+ ['시장 분석','market-platform','플랫폼 분석','플랫폼별 랭킹 제품의 가격·평점 분포를 비교합니다.'],
+ ['시장 분석','market-consumer','소비자 트렌드','Google 자동완성·Trends와 TikTok 영상으로 성분 관심도와 소비자 니즈를 봅니다.'],
+ ['시장 분석','market-competitors','경쟁제품','수집 버튼으로 등록한 경쟁 제품의 가격·용량·성분을 비교합니다.'],
+ ['리뷰 분석','reviews-summary','리뷰 요약','제품별로 고른 소구점과 일본어 후기를 한 장으로 묶어 결재에 올립니다.'],
+ ['리뷰 분석','reviews-list','리뷰 리포트 목록','우리 제품과 경쟁 제품의 리뷰 리포트를 고릅니다.'],
+ ['리뷰 분석','reviews-report-own','우리 제품 리포트','국내 리뷰에서 강점·약점 TOP 3와 주제별 판정을 근거 리뷰와 함께 봅니다.'],
+ ['리뷰 분석','reviews-report-comp','경쟁 제품 리포트','Qoo10 일본어 리뷰를 AI가 번역·분류해 경쟁 제품의 불만을 찾습니다.'],
+ ['리뷰 분석','reviews-compare','소구점 찾기','경쟁 제품 불만과 우리 리뷰 강점을 맞대어 말할 거리를 고릅니다.'],
+ ['리뷰 분석','reviews-translate','상세페이지용 리뷰','국내 리뷰를 일본어로 옮기면서 약기법 검토를 함께 통과시킵니다.'],
+ ['광고 검토','ad-input','문구 검토','광고 문구를 넣으면 줄마다 약기법 위험도를 판정합니다.'],
+ ['광고 검토','ad-result','검토 결과','위험 표현, 사유, 근거, 일본어 대체 표현과 팀장 결재 기록을 보여 줍니다.'],
+ ['광고 검토','ad-history','검토 기록','지금까지의 판정과 승인·반려 이력을 모아 봅니다.'],
+ ['광고 검토','guide-qoo10','콘텐츠 가이드 · 큐텐','소구점으로 Qoo10 상세페이지 제목·본문 초안과 휴대폰 미리보기를 만듭니다.'],
+ ['광고 검토','guide-insta','콘텐츠 가이드 · 인스타','인스타그램 게시물 캡션·해시태그 초안을 만들고 금지 표현을 다시 검사합니다.'],
+ ['소비자 설문','survey-public','공개 설문 (휴대폰)','상세페이지 링크로 들어온 일본 소비자가 사기 전에 피부타입을 확인합니다.'],
+ ['소비자 설문','survey-summary','응답 집계 · 요약','응답에서 다음 제품 개발과 입점 채널 판단에 쓸 결론만 보여 줍니다.'],
+ ['소비자 설문','survey-channel','응답 집계 · 채널','어느 채널에서 응답과 구매 클릭이 들어왔는지 비교합니다.'],
+ ['소비자 설문','survey-skin','응답 집계 · 피부타입·고민','피부타입별 고민 TOP 3를 봅니다.'],
+ ['소비자 설문','survey-product','응답 집계 · 제품 반응','추천 제품 노출과 클릭, 출시 알림 반응을 봅니다.'],
+ ['결재 · AI 분석','approvals','결재함','팀원이 올린 탭별 시안을 팀장이 승인하거나 사유와 함께 반려합니다.'],
+ ['결재 · AI 분석','approval-version','시안 미리보기','시안 내용, 근거, 이전 버전과의 차이를 보고 결재합니다.'],
+ ['결재 · AI 분석','approvals-mine','내 시안','내가 올린 시안의 버전과 결재 상태를 봅니다.'],
+ ['결재 · AI 분석','ai-analysis','AI 분석','탭별 승인본을 골라 통합 분석을 실행합니다.'],
+ ['결재 · AI 분석','ai-analysis-result','AI 분석 결과','승인본을 근거로 만든 통합 보고서입니다. 문장마다 근거 버전이 연결됩니다.'],
+];
+const nav=document.getElementById('nav'), view=document.getElementById('view');
+let g='';
+S.forEach(([grp,id,title])=>{
+  if(grp!==g){g=grp;const h=document.createElement('h2');h.textContent=grp;nav.appendChild(h)}
+  const b=document.createElement('button');b.type='button';b.dataset.id=id;
+  b.innerHTML=`<span>${title}</span>`;
+  b.addEventListener('click',()=>{location.hash=id});nav.appendChild(b);
+});
+function show(){
+  const id=location.hash.slice(1); let i=S.findIndex(s=>s[1]===id); if(i<0)i=0;
+  const [grp,sid,title,desc]=S[i];
+  nav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-current',String(b.dataset.id===sid)));
+  const img = sid==='survey-public'
+    ? `<div class="phones"><div class="phone"><img src="img/survey-public-start.jpg" alt="공개 설문 시작 화면"></div><div class="phone"><img src="img/survey-public-q.jpg" alt="공개 설문 첫 질문 화면"></div></div>`
+    : `<div class="shot"><img src="img/${sid}.jpg" alt="${title} 화면"></div>`;
+  const prev=S[(i-1+S.length)%S.length][1], next=S[(i+1)%S.length][1];
+  view.innerHTML=`<div class="cap"><h3>${grp} · ${title}</h3>
+    <div class="step"><button type="button" data-go="${prev}">← 이전</button><button type="button" data-go="${next}">다음 →</button></div>
+    <p>${desc}</p></div>${img}`;
+  view.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{location.hash=b.dataset.go;view.scrollIntoView({block:'start'})}));
+}
+window.addEventListener('hashchange',show); show();
+</script>
+
+</body>
+</html>
