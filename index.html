@@ -50,7 +50,41 @@ main{background:var(--panel);border-radius:14px;padding:18px 20px 20px;min-width
 .phones{display:flex;flex-wrap:wrap;gap:28px;justify-content:center;padding:12px 0}
 .phone{width:300px;max-width:100%;border:10px solid #1b1f2a;border-radius:36px;overflow:hidden;background:#fff}
 .phone img{display:block;width:100%;height:auto}
-@media (max-width:860px){.app{grid-template-columns:1fr}nav{position:static;max-height:none}}
+.shot{cursor:zoom-in;position:relative}
+.zoomhint{display:none}
+.notice .short{display:none}
+.step.bottom{display:none}
+.lb{position:fixed;inset:0;z-index:50;background:rgba(6,10,20,.92);overflow:auto;-webkit-overflow-scrolling:touch}
+.lb[hidden]{display:none}
+.lb img{display:block;max-width:none;width:auto;margin:0}
+.lb .close{position:fixed;top:max(12px,env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px));z-index:51;border:0;border-radius:999px;background:#fff;color:#111c33;font:inherit;font-size:14px;font-weight:500;padding:8px 14px;cursor:pointer}
+.lb .tip{position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:rgba(255,255,255,.92);color:#111c33;border-radius:999px;padding:6px 12px;font-size:12px;white-space:nowrap}
+@media (max-width:860px){
+  .wrap{padding-block:10px 32px;gap:10px}
+  header{flex-direction:column;align-items:stretch;gap:8px}
+  header .notice{order:-1;max-width:none;font-size:12px;padding:6px 12px}
+  header h1{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  header p{display:none}
+  .notice .long{display:none} .notice .short{display:inline}
+  .app{grid-template-columns:1fr;gap:10px}
+  nav{position:sticky;top:0;z-index:10;max-height:none;display:flex;align-items:center;gap:6px;overflow-x:auto;overflow-y:hidden;
+    padding:8px;border-radius:0;margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding-inline:16px;
+    scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;box-shadow:0 1px 0 var(--line)}
+  nav::-webkit-scrollbar{display:none}
+  nav h2{flex:none;margin:0 2px 0 8px;font-size:10.5px;letter-spacing:.02em;white-space:nowrap}
+  nav h2:first-child{margin-left:0}
+  nav button{flex:none;width:auto;white-space:nowrap;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;scroll-snap-align:center}
+  nav button[aria-current="true"]{border-color:var(--accent)}
+  main{padding:12px 12px 14px;gap:10px;border-radius:12px}
+  .cap h3{font-size:16px}
+  .cap p{font-size:12.5px}
+  .cap .step{display:none}
+  .step.bottom{display:flex;justify-content:space-between}
+  .step.bottom button{flex:1;padding:10px 12px;font-size:14px}
+  .zoomhint{display:block;position:absolute;right:8px;bottom:8px;background:rgba(17,28,51,.78);color:#fff;border-radius:999px;padding:4px 10px;font-size:11.5px;pointer-events:none}
+  .phones{gap:14px;padding:4px 0}
+  .phone{width:calc(50% - 7px);border-width:6px;border-radius:22px}
+}
 </style>
 
 <div class="wrap">
@@ -59,13 +93,14 @@ main{background:var(--panel);border-radius:14px;padding:18px 20px 20px;min-width
       <h1>K-뷰티 일본 진출 AI 대시보드 · 체험판</h1>
       <p>4조 팀 프로젝트 (2등) · 예시 브랜드 Leaf& Dew · 왼쪽에서 화면을 고르세요</p>
     </div>
-    <div class="notice">실제 서비스 화면을 로그인 없이 볼 수 있게 샘플 데이터로 옮겨 둔 페이지입니다. 실제 서비스는 팀 계정 로그인과 DB 연결이 필요해 별도로 운영했습니다.</div>
+    <div class="notice"><span class="long">실제 서비스 화면을 로그인 없이 볼 수 있게 샘플 데이터로 옮겨 둔 페이지입니다. 실제 서비스는 팀 계정 로그인과 DB 연결이 필요해 별도로 운영했습니다.</span><span class="short">샘플 데이터로 옮겨 둔 체험용 페이지예요. 실제 서비스는 로그인·DB 연결이 필요해요.</span></div>
   </header>
   <div class="app">
     <nav id="nav" aria-label="화면 목록"></nav>
     <main id="view" aria-live="polite"></main>
   </div>
 </div>
+<div class="lb" id="lb" hidden role="dialog" aria-label="원본 크기로 보기"><button type="button" class="close" id="lbClose">닫기 ✕</button><img id="lbImg" alt=""><div class="tip">원본 크기 · 위아래·좌우로 밀어서 보기</div></div>
 
 <script>
 const S=[
@@ -107,19 +142,36 @@ S.forEach(([grp,id,title])=>{
   b.innerHTML=`<span>${title}</span>`;
   b.addEventListener('click',()=>{location.hash=id});nav.appendChild(b);
 });
+let first=true;
+function topOfView(){const y=view.getBoundingClientRect().top+scrollY-nav.offsetHeight-8; if(scrollY>y) scrollTo({top:Math.max(0,y)})}
 function show(){
   const id=location.hash.slice(1); let i=S.findIndex(s=>s[1]===id); if(i<0)i=0;
   const [grp,sid,title,desc]=S[i];
   nav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-current',String(b.dataset.id===sid)));
   const img = sid==='survey-public'
-    ? `<div class="phones"><div class="phone"><img src="img/survey-public-start.jpg" alt="공개 설문 시작 화면"></div><div class="phone"><img src="img/survey-public-q.jpg" alt="공개 설문 첫 질문 화면"></div></div>`
-    : `<div class="shot"><img src="img/${sid}.jpg" alt="${title} 화면"></div>`;
+    ? `<div class="phones"><div class="phone shot-z"><img src="img/survey-public-start.jpg" alt="공개 설문 시작 화면"></div><div class="phone shot-z"><img src="img/survey-public-q.jpg" alt="공개 설문 첫 질문 화면"></div></div>`
+    : `<div class="shot shot-z"><img src="img/${sid}.jpg" alt="${title} 화면"><span class="zoomhint">눌러서 크게 보기</span></div>`;
   const prev=S[(i-1+S.length)%S.length][1], next=S[(i+1)%S.length][1];
   view.innerHTML=`<div class="cap"><h3>${grp} · ${title}</h3>
     <div class="step"><button type="button" data-go="${prev}">← 이전</button><button type="button" data-go="${next}">다음 →</button></div>
-    <p>${desc}</p></div>${img}`;
-  view.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{location.hash=b.dataset.go;view.scrollIntoView({block:'start'})}));
+    <p>${desc}</p></div>${img}
+    <div class="step bottom"><button type="button" data-go="${prev}">← 이전</button><button type="button" data-go="${next}">다음 →</button></div>`;
+  view.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{location.hash=b.dataset.go;topOfView()}));
+  view.querySelectorAll('.shot-z img').forEach(im=>im.addEventListener('click',()=>openLb(im)));
+  const cur=nav.querySelector('[aria-current="true"]');
+  if(cur&&getComputedStyle(nav).overflowX==='auto'){nav.scrollTo({left:cur.offsetLeft-(nav.clientWidth-cur.offsetWidth)/2,behavior:first?'auto':'smooth'})}
+  first=false;
 }
+const lb=document.getElementById('lb'), lbImg=document.getElementById('lbImg');
+function openLb(im){lbImg.src=im.src;lbImg.alt=im.alt;lb.hidden=false;lb.scrollTo(0,0);document.body.style.overflow='hidden';document.getElementById('lbClose').focus()}
+function closeLb(){lb.hidden=true;lbImg.removeAttribute('src');document.body.style.overflow=''}
+document.getElementById('lbClose').addEventListener('click',closeLb);
+addEventListener('keydown',e=>{if(e.key==='Escape'&&!lb.hidden)closeLb()});
+// 휴대폰: 화면 영역을 좌우로 밀면 이전·다음
+let tx=null,ty=0;
+view.addEventListener('touchstart',e=>{if(e.touches.length!==1){tx=null;return}tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+view.addEventListener('touchend',e=>{if(tx===null)return;const t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;tx=null;
+  if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){const b=view.querySelectorAll('.step.bottom [data-go]')[dx<0?1:0];if(b){location.hash=b.dataset.go;topOfView()}}},{passive:true});
 window.addEventListener('hashchange',show); show();
 </script>
 
